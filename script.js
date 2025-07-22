@@ -1,23 +1,65 @@
+let tasks = [];
+
+window.onload = function () {
+  loadTasks();
+};
+
 function addTask() {
-    const input = document.getElementById("taskInput");
-    const taskText = input.value.trim();
-    if (taskText === "") return;
-  
+  const input = document.getElementById("taskInput");
+  const taskText = input.value.trim();
+  if (taskText === "") return;
+
+  const task = {
+    text: taskText,
+    done: false,
+  };
+
+  tasks.push(task);
+  input.value = "";
+
+  saveTasks();
+  renderTasks();
+}
+
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = ""; // Clear existing tasks
+
+  tasks.forEach((task, index) => {
     const li = document.createElement("li");
-    li.textContent = taskText;
-  
-    // Click to mark as done
+    li.textContent = task.text;
+
+    if (task.done) {
+      li.classList.add("done");
+    }
+
+    // Toggle done on click
     li.addEventListener("click", () => {
-      li.classList.toggle("done");
+      tasks[index].done = !tasks[index].done;
+      saveTasks();
+      renderTasks();
     });
-  
-    // Right-click to remove
+
+    // Right-click to delete
     li.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      li.remove();
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
     });
-  
-    document.getElementById("taskList").appendChild(li);
-    input.value = ""; // Clear input
+
+    list.appendChild(li);
+  });
+}
+
+function saveTasks() {
+  localStorage.setItem("todo-tasks", JSON.stringify(tasks));
+}
+
+function loadTasks() {
+  const stored = localStorage.getItem("todo-tasks");
+  if (stored) {
+    tasks = JSON.parse(stored);
   }
-  
+  renderTasks();
+}
